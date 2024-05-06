@@ -1,0 +1,56 @@
+classdef myRegressionLayer < nnet.layer.RegressionLayer ...
+        & nnet.layer.Acceleratable
+    % Example custom regression layer with mean-absolute-error loss.
+    
+    methods
+        function layer = myRegressionLayer(name)
+            % layer = myRegressionLayer(name) creates a
+            % mean-sqaure-error regression layer and specifies the layer
+            % name.
+            % Set layer name.
+            layer.Name = name;
+            % Set layer description.
+            layer.Description = 'Mean Square Error';
+        end
+        
+        function loss = forwardLoss(layer, Y, T)
+            % Inputs:
+            %         layer - Output layer
+            %         Y     – Predictions made by network
+            %         T     – Training targets
+            % Compute the root mean squared error
+            % data loss: compute the difference between target and predicted values
+            dataLoss = sqrt(mean((T-Y).^2,'all'))
+            % loss = dataLoss;
+
+            % physics loss;
+            N = size(Y,2);
+            YF = zeros(2,N);
+            TF = zeros(2,N);
+            for i = 1:N
+                YF(:,i) = physics_law(Y(:,i));
+                TF(:,i) = physics_law(T(:,i));
+            end
+            physicLoss = sqrt(mean((TF-YF).^2,'all'))
+            alpha = 0.;
+            loss = alpha*dataLoss + (1-alpha)*physicLoss;
+            % loss = physicLoss;
+        end
+
+        function dLdY = backwardLoss(layer,Y,T)
+            % (Optional) Backward propagate the derivative of the loss 
+            % function.
+            %
+            % Inputs:
+            %         layer - Output layer
+            %         Y     – Predictions made by network
+            %         T     – Training targets
+            %
+            % Output:
+            %         dLdY  - Derivative of the loss with respect to the 
+            %                 predictions Y        
+
+            dLdY = 2 * (Y - T) / numel(T);
+        end
+    end
+end
