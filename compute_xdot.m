@@ -1,26 +1,23 @@
-function xdot = compute_xdot(x,F)
-    q1 = x(1);
-    q1dot = x(2);
-    q2 = x(3);
-    q2dot = x(4);
+function dxdt = compute_xdot(x,F)
+    % x(1) - position of mass 1
+    % x(2) - velocity of mass 1
+    % x(3) - angle of mass 2
+    % x(4) - angular velocity of mass 2
+    % get parameters
     [~,~,params,~] = options();
-    % mass 
+    % parameters 
     m1 = params.M(1);
     m2 = params.M(2);
     l = params.L;
     c = params.C;
     k = params.K;
     g = params.G;
-
-    % solve the Lagrange equation F = M*q_ddot + V*q_dot + G
-    % compute q_ddot: M*q_ddot = F - V*q_dot - G, using linsolve
-    A = [m1+m2 m2*l*cos(q2);m2*l*cos(q2) m2*l*l];
-    B = [F(1)-c*q1dot+m2*l*sin(q2)*q2dot*q2dot-k*q1; F(2)-m2*g*l*sin(q2)];
-    qddot = linsolve(A,B);
-
-    xdot = zeros(4,1);
-    xdot(1) = q1dot;
-    xdot(2) = qddot(1);
-    xdot(3) = q2dot;
-    xdot(4) = qddot(2);
+    mu_k = params.mu_k;
+    % differential equations
+    dxdt = zeros(4,1); % velocity of mass 1
+    dxdt(1) = x(2);
+    dxdt(2) = (1/(m1+m2))*(F(1) - sign(x(2))*mu_k*(m1+m2)*g - ... %
+        m2*l*dxdt(4)*cos(x(3)) + m2*l*x(4)^2*sin(x(3)) - k*x(1) - c*x(2)); % acceleration of mass 1
+    dxdt(3) = x(4); % angular velocity of mass 2
+    dxdt(4) = (1/m2/l/l)*(F(2) - m2*l*dxdt(2)*cos(x(3)) - m2*l*sin(x(3))); % angular acceleration of mass 2
 end
