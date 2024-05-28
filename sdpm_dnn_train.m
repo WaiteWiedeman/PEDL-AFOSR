@@ -10,8 +10,8 @@ task = "predict_next";
 % task = "predict_arbitrary";
 seq_steps = 20;
 t_force_stop = 1;
-training_percent = 0.8;
-max_epochs = 20;
+training_percent = 0.7;
+max_epochs = 60;
 
 %% preprocess data for training
 % Refer to the Help "Import Data into Deep Network Designer / Sequences and time series" 
@@ -63,48 +63,52 @@ dsTest = combine(dsState, dsTime, dsLabel);
 numFeatures = 9; % 6-dim states + time + 2 forces in the first second
 numTime = 1; % the time step for prediction
 numOutput = 6; % the 4-dim states of the predicted time step 
-
-layers = [
-    featureInputLayer(numFeatures,"Name","featureinput")
-    concatenationLayer(1,2,Name="cat")
-    fullyConnectedLayer(128,"Name","fc")
-    reluLayer("Name","relu")
-    fullyConnectedLayer(64,"Name","fc_4")
-    reluLayer("Name","relu_2")
-    fullyConnectedLayer(32,"Name","fc_2")
-    reluLayer("Name","relu_1")
-    fullyConnectedLayer(16,"Name","fc_1")
-    reluLayer("Name","relu_3")
-    fullyConnectedLayer(numOutput,"Name","fc_3")
-    myRegressionLayer("mse")];
+% 
 % layers = [
-%     sequenceInputLayer(numFeatures)
-%     lstmLayer(64,OutputMode="last")
-%     fullyConnectedLayer(32)
-%     reluLayer
+%     sequenceInputLayer(numFeatures,"Name","seqinput")
+%     fullyConnectedLayer(128,"Name","fc")
+%     reluLayer("Name","relu")
 %     concatenationLayer(1,2,Name="cat")
-%     fullyConnectedLayer(16)
-%     reluLayer
-%     fullyConnectedLayer(numOutput)
+%     fullyConnectedLayer(64,"Name","fc_4")
+%     reluLayer("Name","relu_2")
+%     fullyConnectedLayer(32,"Name","fc_2")
+%     reluLayer("Name","relu_1")
+%     fullyConnectedLayer(16,"Name","fc_1")
+%     reluLayer("Name","relu_3")
+%     fullyConnectedLayer(numOutput,"Name","fc_3")
 %     myRegressionLayer("mse")];
+layers = [
+    sequenceInputLayer(numFeatures)
+    lstmLayer(100,OutputMode="last")
+    fullyConnectedLayer(64)
+    reluLayer
+    fullyConnectedLayer(32)
+    reluLayer
+    concatenationLayer(1,2,Name="cat")
+    fullyConnectedLayer(16)
+    reluLayer
+    fullyConnectedLayer(numOutput)
+    myRegressionLayer("mse")];
 lgraph = layerGraph(layers);
 lgraph = addLayers(lgraph,[...
-    featureInputLayer(numTime,Name="time")]); %...fullyConnectedLayer(8,Name="time")
+    featureInputLayer(numTime)...
+    fullyConnectedLayer(8)...
+    reluLayer(Name="time")]); %
 lgraph = connectLayers(lgraph,"time","cat/in2");
 plot(lgraph);
 
-% options = trainingOptions("adam", ...
-%     InitialLearnRate=0.0001, ...
-%     MaxEpochs=max_epochs, ...
-%     SequencePaddingDirection="left", ...
-%     Shuffle='every-epoch', ...
-%     Plots='training-progress', ...
-%     ValidationData=dsTest, ...
-%     MiniBatchSize=128, ...
-%     Verbose=1);
-% 
-% [net,info] = trainNetwork(dsTrain,lgraph,options);
-% 
-% fname = lossType+"_model_"+num2str(num_samples)+".mat";
-% save(fname,"net");
-% disp(info)
+options = trainingOptions("adam", ...
+    InitialLearnRate=0.0001, ...
+    MaxEpochs=max_epochs, ...
+    SequencePaddingDirection="left", ...
+    Shuffle='every-epoch', ...
+    Plots='training-progress', ...
+    ValidationData=dsTest, ...
+    MiniBatchSize=128, ...
+    Verbose=1);
+
+[net,info] = trainNetwork(dsTrain,lgraph,options);
+
+fname = lossType+"_model_"+num2str(num_samples)+".mat";
+save(fname,"net");
+disp(info)
