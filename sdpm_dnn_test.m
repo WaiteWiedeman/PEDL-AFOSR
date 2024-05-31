@@ -10,9 +10,10 @@ task = "predict_next";
 % task = "predict_arbitrary";
 seq_steps = 20;
 t_force_stop = 1;
+tSpan = [0,25];
 
 num_samples = 500;
-fname = lossType+"_model_"+num2str(num_samples)+".mat";
+fname = lossType+"_model_"+num2str(num_samples)+".mat"; %+"_"+num2str(tSpan(2))+"s"
 model = load(fname).net;
 % plot(model)
 % Mass-Spring-Damper-Pendulum Dynamics System Parameters
@@ -20,9 +21,9 @@ model = load(fname).net;
 strType = {'constant','increase','decrease'};
 
 %% Test
-% max_forces = [1,2,3,4,5,6,7,8,9,10];
-max_forces = [5];
-tTest = linspace(1,20,100);
+max_forces = [1,2,3,4,5,6,7,8,9,10];
+%max_forces = [5];
+tTest = linspace(1,50,100);
 num_test = length(max_forces);
 err_list = zeros(num_test,length(tTest));
 for i = 1:num_test

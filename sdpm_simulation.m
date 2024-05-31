@@ -1,6 +1,6 @@
 function y = sdpm_simulation(tSpan, x0, ctrlOptions)
     % ODE solver
-    %opts = odeset('RelTol',1e-8,'AbsTol',1e-10); %,'OutputFcn',@odeplot,'Stats','on'
+    %opts = odeset('RelTol',1e-5,'AbsTol',1e-7); %,'OutputFcn',@odeplot,'Stats','on'
     [t,x] = ode45(@(t,x) sdpm_system(t,x,ctrlOptions.fMax,ctrlOptions.fSpan,ctrlOptions.fType),tSpan,x0); % ,opts
     
     size = length(t);

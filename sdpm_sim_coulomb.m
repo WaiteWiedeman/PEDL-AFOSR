@@ -12,16 +12,16 @@ flag = "sdpm";
 % flag = "vdp";
 % flag = "mck";
 % flag = "mckloop";
-tSpan = [0,5];
-ctrlOptions.fMax = [2;0]; % max forces
+tSpan = [0,10];
+ctrlOptions.fMax = [10;0]; % max forces
 
 % solve ode
 % opts = odeset('RelTol',1e-5,'AbsTol',1e-7,'OutputFcn',@odeplot,'Stats','on','Events',@EventsFcn,'Jacobian',@(t,x) jac(t,x,ctrlOptions));
 switch flag
     case "sdpm"
         % ode15s, ode23s, ode23t, ode23tb  ??
-        opts = odeset('RelTol',1e-9,'AbsTol',1e-2,'OutputFcn',@odeplot,'Stats','on'); %
-        [t,x] = ode23s(@(t,x) sdpm_system(t,x,ctrlOptions.fMax,ctrlOptions.fSpan,ctrlOptions.fType),tSpan,x0,opts); % ,opts
+        opts = odeset('RelTol',1e-5,'AbsTol',1e-7,'OutputFcn',@odeplot,'Stats','on'); %
+        [t,x] = ode45(@(t,x) sdpm_system(t,x,ctrlOptions.fMax,ctrlOptions.fSpan,ctrlOptions.fType),tSpan,x0,opts); % ,opts
   
     case "sdpmloop"
         opts = odeset('OutputFcn',@odeplot,'Events',@EventsFcn); %'RelTol',1e-5,'AbsTol',1e-7,
@@ -105,6 +105,15 @@ switch flag
         end
         t = y(:,1); % time
         x = y(:,4:9); % states
+        [~,~,params,~] = options();
+        m1 = params.M(1);
+        m2 = params.M(2);
+        g = params.G;
+        mu_k = params.mu_k;
+        v = y(:,6); % velo
+        F_f_exp = -tanh(v/2)*mu_k*(m1+m2)*g; % friction modeled with exponential function 
+        F_f_sig = -sign(v)*mu_k*(m1+m2)*g; % friction modeled with signum function 
+        F_f_sat = -min(1, max(-1, 100*v))*mu_k*(m1+m2)*g;% friction modeled with saturation function
 
         % plot box-pendulum system with Coulomb friction
 
@@ -167,6 +176,36 @@ switch flag
         xlabel("Time (s)");
         set(get(gca,'ylabel'),'rotation',0);
         set(gca,'fontsize',12);
+
+        figure('Position',[100,100,800,400]);
+        sgtitle("Friction Force");
+        % 
+        % subplot(3,1,1);
+        plot(t,F_f_sat,'Color','blue','LineWidth',2);
+        %xline(1,'k--', 'LineWidth',1);
+        ylabel("$F_f$ [N]",'Interpreter','latex');
+        % ylim([-5,5]);
+        xlabel("Time (s)");
+        set(get(gca,'ylabel'),'rotation',0);
+        set(gca,'fontsize',12);
+        % 
+        % subplot(3,1,2);
+        % plot(t,F_f_sig,'Color','green','LineWidth',2);
+        % %xline(1,'k--', 'LineWidth',1);
+        % ylabel('signum');
+        % % ylim([-5,5]);
+        % xlabel("Time (s)");
+        % set(get(gca,'ylabel'),'rotation',0);
+        % set(gca,'fontsize',12);
+        % 
+        % subplot(3,1,3);
+        % plot(t,F_f_exp,'Color','magenta','LineWidth',2);
+        % %xline(1,'k--', 'LineWidth',1);
+        % ylabel('exponential');
+        % % ylim([-5,5]);
+        % xlabel("Time (s)");
+        % set(get(gca,'ylabel'),'rotation',0);
+        % set(gca,'fontsize',12);
          
 end
 

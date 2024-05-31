@@ -8,10 +8,11 @@ clc;
 lossType = "PiNN";
 task = "predict_next";
 % task = "predict_arbitrary";
-seq_steps = 20;
+seq_steps = 18;
 t_force_stop = 1;
-training_percent = 0.7;
+training_percent = 0.8;
 max_epochs = 60;
+tSpan = [0,25];
 
 %% preprocess data for training
 % Refer to the Help "Import Data into Deep Network Designer / Sequences and time series" 
@@ -79,7 +80,7 @@ numOutput = 6; % the 4-dim states of the predicted time step
 %     myRegressionLayer("mse")];
 layers = [
     sequenceInputLayer(numFeatures)
-    lstmLayer(100,OutputMode="last")
+    lstmLayer(128,OutputMode="last")
     fullyConnectedLayer(64)
     reluLayer
     fullyConnectedLayer(32)
@@ -91,8 +92,10 @@ layers = [
     myRegressionLayer("mse")];
 lgraph = layerGraph(layers);
 lgraph = addLayers(lgraph,[...
-    featureInputLayer(numTime)...
-    fullyConnectedLayer(8)...
+    featureInputLayer(numTime)
+    fullyConnectedLayer(4)
+    reluLayer
+    fullyConnectedLayer(8)
     reluLayer(Name="time")]); %
 lgraph = connectLayers(lgraph,"time","cat/in2");
 plot(lgraph);
@@ -109,6 +112,6 @@ options = trainingOptions("adam", ...
 
 [net,info] = trainNetwork(dsTrain,lgraph,options);
 
-fname = lossType+"_model_"+num2str(num_samples)+".mat";
+fname = lossType+"_smallstep_model_"+num2str(num_samples)+"_"+num2str(tSpan(2))+"s"+".mat";
 save(fname,"net");
 disp(info)
