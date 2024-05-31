@@ -12,7 +12,7 @@ flag = "sdpm";
 % flag = "vdp";
 % flag = "mck";
 % flag = "mckloop";
-tSpan = [0,10];
+tSpan = [0,20];
 ctrlOptions.fMax = [10;0]; % max forces
 
 % solve ode

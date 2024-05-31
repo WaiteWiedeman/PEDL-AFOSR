@@ -10,10 +10,10 @@ task = "predict_next";
 % task = "predict_arbitrary";
 seq_steps = 20;
 t_force_stop = 1;
-tSpan = [0,25];
+tSpan = [0,10];
 
 num_samples = 500;
-fname = lossType+"_model_"+num2str(num_samples)+".mat"; %+"_"+num2str(tSpan(2))+"s"
+fname = lossType+"_model_"+num2str(num_samples)+"_"+num2str(tSpan(2))+"s"+".mat"; %+"_"+num2str(tSpan(2))+"s"
 model = load(fname).net;
 % plot(model)
 % Mass-Spring-Damper-Pendulum Dynamics System Parameters

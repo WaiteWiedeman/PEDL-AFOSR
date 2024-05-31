@@ -1,0 +1,67 @@
+function xdot = compute_xdot(x,F)
+    % x(1) - position of mass 1
+    % x(2) - velocity of mass 1
+    % x(3) - angle of mass 2
+    % x(4) - angular velocity of mass 2
+    % get parameters
+    % [~,~,params,~] = options();
+    % parameters 
+    % m1 = params.M(1);
+    % m2 = params.M(2);
+    % l = params.L;
+    % c = params.C;
+    % k = params.K;
+    % g = params.G;
+    % mu_k = params.mu_k;
+    % % differential equations
+    % dxdt = zeros(4,1); % velocity of mass 1
+    % dxdt(1) = x(2);
+    % dxdt(2) = (1/(m1+m2))*(F(1) - min(1, max(-1, x(2)))*mu_k*(m1+m2)*g - ... %sign(x(2))  min(1, max(-1, x(2))) tanh(x(2)/2) 
+    %     m2*l*dxdt(4)*cos(x(3)) + m2*l*x(4)^2*sin(x(3)) - k*x(1) - c*x(2)); % acceleration of mass 1
+    % dxdt(3) = x(4); % angular velocity of mass 2
+    % dxdt(4) = (1/m2/l/l)*(F(2) - m2*l*dxdt(2)*cos(x(3)) - m2*g*l*sin(x(3))); % angular acceleration of mass 2
+
+    q1 = x(1);
+    q1dot = x(2);
+    q2 = x(3);
+    q2dot = x(4);
+
+    % system parameters
+    [~,~,params,~] = options();
+    % parameters 
+    M1 = params.M(1);
+    M2 = params.M(2);
+    L = params.L;
+    C = params.C;
+    K = params.K;
+    G = params.G;
+    mu_k = params.mu_k;
+    mu_s = params.mu_s;
+    
+    %Friction force
+    N = (M1+M2)*G;
+    F_f = friction(x,mu_s,mu_k,N,F(1));
+    %F_f = N*mu_k*sign(x(2));
+
+    % solve the Lagrange equation F = M*q_ddot + V*q_dot + G
+    % compute q_ddot: M*q_ddot = F - V*q_dot - G, using linsolve
+    A = [M1+M2 M2*L*cos(q2); M2*L*cos(q2) M2*L*L];
+    B = [F(1)-F_f-C*q1dot+M2*L*sin(q2)*q2dot*q2dot-K*q1; F(2)-M2*G*L*sin(q2)];
+    qddot = linsolve(A,B);
+
+    xdot = zeros(4,1);
+    xdot(1) = q1dot;
+    xdot(2) = qddot(1);
+    xdot(3) = q2dot;
+    xdot(4) = qddot(2);
+end
+
+function F_f = friction(x,mu_s,mu_k,N,F_app)
+    v = x(2);
+    if abs(v) < 1e-3
+        if F_app > 0
+        F_f = min(F_app,mu_s*N); % static friciton
+    else
+        F_f = mu_k*N*sign(v); % kinetic friction tanh(100*v/1) min(1, max(-1, 50*v)) sign(v)
+    end
+end

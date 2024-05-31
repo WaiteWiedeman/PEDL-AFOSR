@@ -7,7 +7,7 @@ saturated_x = min(1, max(-1, x));
 saturated_x2 = min(1, max(-1, 2*x));
 saturated_x3 = min(1, max(-1, 100*x));
 figure;
-plot(x,saturated_x)
+plot(x,saturated_x3)
 axis([-10.1 10.1 -1.1 1.1])
 grid on;
 
@@ -21,6 +21,6 @@ figure;
 plot(x,y,x,y1,x,y2,x,y3)
 
 %% trig approximation
-z = tanh(2*x/1);
+z = tanh(100*x/1);
 figure;
 plot(x,z)

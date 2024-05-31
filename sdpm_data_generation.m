@@ -7,13 +7,13 @@ clc;
 % Mass-Spring-Damper-Pendulum Dynamics System Parameters
 [tSpan,x0,paramOptions,ctrlOptions] = options();
 strType = {'constant','increase','decrease'};
-tSpan = [0,25];
+tSpan = [0,5];
 
 % simulate and save data
-num_samples = 500;
+num_samples = 1;
 samples = {};
 for i = 1:num_samples
-    ctrlOptions.fMax = rand(2,1).*[10;0]; % random max forces
+    ctrlOptions.fMax = [15;0]; % random max forces rand(2,1).*
     % ctrlOptions.fType = strType{randi(numel(strType))};
     % ctrlOptions.fSpan = [0,randi([1,5])];
     %tic
@@ -31,16 +31,18 @@ save('trainingData.mat','samples');
 %% plot data
 t = y(:,1); % time
 x = y(:,4:9); % states
+F_app = y(:,2); % applied force
 [~,~,params,~] = options();
 m1 = params.M(1);
 m2 = params.M(2);
 g = params.G;
 mu_k = params.mu_k;
+mu_s = params.mu_s;
 v = y(:,6); % velo
 F_f_exp = -tanh(v/2)*mu_k*(m1+m2)*g; % friction modeled with exponential function
 F_f_sig = -sign(v)*mu_k*(m1+m2)*g; % friction modeled with signum function
 F_f_sat = -min(1, max(-1, 100*v))*mu_k*(m1+m2)*g;% friction modeled with saturation function
-
+F_f = friction(v,F_app);
 % plot box-pendulum system with Coulomb friction
 
 figure('Position',[100,100,800,400]);
@@ -107,7 +109,9 @@ figure('Position',[100,100,800,400]);
 sgtitle("Friction Force");
 %
 % subplot(3,1,1);
-plot(t,F_f_sat,'Color','blue','LineWidth',2);
+plot(t,-F_f,'Color','blue','LineWidth',2);
+hold on
+plot(t,F_app,'Color','red','LineWidth',2)
 %xline(1,'k--', 'LineWidth',1);
 ylabel("$F_f$ [N]",'Interpreter','latex');
 % ylim([-5,5]);
@@ -132,3 +136,4 @@ set(gca,'fontsize',12);
 % xlabel("Time (s)");
 % set(get(gca,'ylabel'),'rotation',0);
 % set(gca,'fontsize',12);
+
