@@ -7,13 +7,14 @@ clc;
 % Mass-Spring-Damper-Pendulum Dynamics System Parameters
 [tSpan,x0,paramOptions,ctrlOptions] = options();
 strType = {'constant','increase','decrease'};
-tSpan = [0,5];
+tSpan = [0:0.01:10];
 
 % simulate and save data
 num_samples = 1;
 samples = {};
+tic
 for i = 1:num_samples
-    ctrlOptions.fMax = [15;0]; % random max forces rand(2,1).*
+    ctrlOptions.fMax = [5;0] + rand(2,1).*[10;0]; % random max forces rand(2,1).*
     % ctrlOptions.fType = strType{randi(numel(strType))};
     % ctrlOptions.fSpan = [0,randi([1,5])];
     %tic
@@ -23,8 +24,10 @@ for i = 1:num_samples
     fname=['data/input',num2str(i),'.mat'];
     save(fname, 'state');
     samples{end+1} = fname;
+    disp(i)
     % plot_states(y(:,1),y(:,4:9),paramOptions,ctrlOptions,[])
 end
+toc
 samples = reshape(samples,[],1); % make it row-based
 save('trainingData.mat','samples');
 
@@ -32,17 +35,8 @@ save('trainingData.mat','samples');
 t = y(:,1); % time
 x = y(:,4:9); % states
 F_app = y(:,2); % applied force
-[~,~,params,~] = options();
-m1 = params.M(1);
-m2 = params.M(2);
-g = params.G;
-mu_k = params.mu_k;
-mu_s = params.mu_s;
-v = y(:,6); % velo
-F_f_exp = -tanh(v/2)*mu_k*(m1+m2)*g; % friction modeled with exponential function
-F_f_sig = -sign(v)*mu_k*(m1+m2)*g; % friction modeled with signum function
-F_f_sat = -min(1, max(-1, 100*v))*mu_k*(m1+m2)*g;% friction modeled with saturation function
-F_f = friction(v,F_app);
+F_f = y(:,10);
+
 % plot box-pendulum system with Coulomb friction
 
 figure('Position',[100,100,800,400]);

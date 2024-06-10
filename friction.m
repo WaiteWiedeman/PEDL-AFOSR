@@ -11,6 +11,6 @@ function F_f = friction(v,F_app)
     if abs(v) < 1e-3
         F_f = min(F_app,mu_s*N); % static friciton
     else
-        F_f = mu_k*N*tanh(100*v); % kinetic friction tanh(100*v) min(1, max(-1, 50*v)) sign(v)
+        F_f = mu_k*N*min(1, max(-1, 100*v)); % kinetic friction tanh(100*v) min(1, max(-1, 50*v)) sign(v)
     end
 end

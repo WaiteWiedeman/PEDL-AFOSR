@@ -1,5 +1,5 @@
 function [tSpan, x0, paramOptions, ctrlOptions] = options()
-    tSpan = [0,20]; 
+    tSpan = [0:0.01:20]; 
     x0 = [0;0;0;0];
     % system parameters
     paramOptions = struct();
